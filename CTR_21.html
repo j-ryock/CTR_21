@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>CTR</title>
+    <style>
+        .closeBtn::after {
+            position: absolute;
+            top: -3px;
+            right: 4px;
+            content: "✖";
+            color: #fff;
+            font-size: 20pt;
+            font-weight: normal;
+            cursor: pointer;
+            visibility: hidden;
+            z-index: 99;
+        }
+
+        .closeBtn[data-show="true"]::after {
+            visibility: visible; /* Make it visible when the data attribute is set */
+        }
+    </style>
+</head>
+<body>
+    <button class="btn" style="width: 100px; height: 40px; margin: 10px; padding: 0; border: 0; font-size: 16px; cursor: pointer; user-select: none;">Btn 1</button>
+    <button class="btn" style="width: 100px; height: 40px; margin: 10px; padding: 0; border: 0; font-size: 16px; cursor: pointer; user-select: none;">Btn 2</button>
+    <button class="btn" style="width: 100px; height: 40px; margin: 10px; padding: 0; border: 0; font-size: 16px; cursor: pointer; user-select: none;">Btn 3</button>
+    <button class="btn" style="width: 100px; height: 40px; margin: 10px; padding: 0; border: 0; font-size: 16px; cursor: pointer; user-select: none;">Btn 4</button>
+    <button class="btn" style="width: 100px; height: 40px; margin: 10px; padding: 0; border: 0; font-size: 16px; cursor: pointer; user-select: none;">Btn 5</button>
+    
+    <p class="txt closeBtn" style="z-index: 2; visibility: hidden; display: block; position: absolute; overflow: hidden; width: 575px; height: 100px; background-color: lightgray; margin-left: 10px; padding: 10px; outline: 1px solid #012169;">Text box 1</p>
+    <p class="txt closeBtn" style="z-index: 2; visibility: hidden; display: block; position: absolute; overflow: hidden; width: 575px; height: 100px; background-color: lightgray; margin-left: 10px; padding: 10px; outline: 1px solid #012169;">Text box 2</p>
+    <p class="txt closeBtn" style="z-index: 2; visibility: hidden; display: block; position: absolute; overflow: hidden; width: 575px; height: 100px; background-color: lightgray; margin-left: 10px; padding: 10px; outline: 1px solid #012169;">Text box 3</p>
+    <p class="txt closeBtn" style="z-index: 2; visibility: hidden; display: block; position: absolute; overflow: hidden; width: 575px; height: 100px; background-color: lightgray; margin-left: 10px; padding: 10px; outline: 1px solid #012169;">Text box 4</p>
+    <p class="txt closeBtn" style="z-index: 2; visibility: hidden; display: block; position: absolute; overflow: hidden; width: 575px; height: 100px; background-color: lightgray; margin-left: 10px; padding: 10px; outline: 1px solid #012169;">Text box 5</p>
+
+    <div class="bgCover" style="z-index: 1; visibility: hidden; position: absolute; top: 0; left: 0; width: 1009px; height: 662px; opacity: 50%; background-color: lightgray;"></div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const showBgCover = false;
+            const showCloseBtns = true;
+            let pageCompletionStatus = 'in progress';
+            const btns = document.querySelectorAll(".btn");
+            const bgCover = document.querySelector(".bgCover");
+            const txts = document.querySelectorAll(".txt");
+            const closeBtns = document.querySelectorAll(".closeBtn");
+            const clickedButtons = new Set();
+
+            function pageComplete() {
+                if (pageCompletionStatus == 'in progress') {
+                    pageCompletionStatus = 'completed';
+                    alert('pageCompletionStatus = ' + pageCompletionStatus);
+                }
+            }
+
+            function showCloseBtn(target) {
+                if (showCloseBtns === true) {
+                        target.setAttribute('data-show', 'true'); // Use data attribute to control visibility
+                }
+            }
+
+            function animateTextBox(target) {
+                const originalWidth = target.style.width;
+                const originalHeight = target.style.height;
+
+                target.style.width = '0';
+                target.style.height = '0';
+                target.style.visibility = 'visible';
+                target.style.transform = 'scale(0.5)';
+
+                if (showBgCover === true) {
+                    bgCover.style.visibility = 'visible';
+                }
+
+                const animation = target.animate([
+                    { transform: 'scale(0.5)', width: '0px', height: '0px' },
+                    { transform: 'scale(1)', width: originalWidth, height: originalHeight }
+                ], {
+                    duration: 500,
+                    easing: 'cubic-bezier(0.680, -0.550, 0.265, 1.550)',
+                    fill: 'forwards'
+                });
+
+                animation.onfinish = () => {
+                    target.style.width = originalWidth;
+                    target.style.height = originalHeight;
+                };
+            }
+
+            btns.forEach((btn, index) => {
+                btn.addEventListener("click", () => {
+                    txts.forEach(txt => {
+                        txt.style.visibility = 'hidden';
+                        txt.style.width = txt.style.width;
+                        txt.style.height = txt.style.height;
+                    });
+
+                    closeBtns.forEach((closeBtn, index) => {
+                        closeBtn.removeAttribute('data-show'); // Hide the close button when clicked
+                    });
+
+                    animateTextBox(txts[index]);
+
+                    showCloseBtn(closeBtns[index]);
+
+                    clickedButtons.add(index);
+                    if (clickedButtons.size === btns.length) {
+                        pageComplete();
+                    }
+                });
+            });
+
+            closeBtns.forEach((closeBtn, index) => {
+                closeBtn.addEventListener("click", (event) => {
+                    event.preventDefault(); // Prevent the default action
+                    event.stopPropagation(); // Stop the click event from propagating
+
+                    closeBtn.removeAttribute('data-show'); // Hide the close button when clicked
+
+                    txts.forEach(txt => {
+                        txt.style.visibility = 'hidden';
+                        txt.style.width = txt.style.width;
+                        txt.style.height = txt.style.height;
+                        if (showBgCover === true) {
+                            bgCover.style.visibility = 'hidden';
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
